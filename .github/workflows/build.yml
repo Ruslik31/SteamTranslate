@@ -1,0 +1,27 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build
+        run: dotnet build src/SteamTranslate.csproj -c Release --nologo
+
+      # archive: false - в артефакты кладётся сам SteamTranslate.exe, а не zip
+      - name: Upload SteamTranslate.exe
+        uses: actions/upload-artifact@v7
+        with:
+          path: src/bin/Release/net48/SteamTranslate.exe
+          archive: false
+          if-no-files-found: error

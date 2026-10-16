@@ -1,0 +1,30 @@
+name: Release
+
+# Релиз выпускается по тегу: git tag v1.0.0 && git push origin v1.0.0
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          dotnet build src/SteamTranslate.csproj -c Release --nologo -p:Version="$VERSION"
+
+      - name: Publish release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" src/bin/Release/net48/SteamTranslate.exe \
+            --title "Steam Translate $GITHUB_REF_NAME" \
+            --generate-notes
